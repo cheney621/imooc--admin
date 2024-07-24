@@ -1,3 +1,4 @@
+import { Store } from 'vuex'
 import router from './store'
 import store from './store'
 
@@ -15,13 +16,18 @@ const whiteList = ['/login']
  * 1.用户已登录——不允许进入login
  * 2.用户未登录——只允许进入login
  */
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (store.getters.token) {
     // token存在，则进入主页
     // 快捷访问
     if (to.path === 'login') {
       next('/') //进入login路径自动跳转到layout页面
     } else {
+      // 判断用户资料是否正确的获取
+      // 若不存在用户资料，则需要获取用户信息
+      if (!store.getters.hasUserInfo) {
+        await store.dispatch('user/getUserInfo')
+      }
       next() //进入的不是login，则正常的跳转
     }
   } else {

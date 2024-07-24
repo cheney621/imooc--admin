@@ -60,7 +60,7 @@ import { useStore } from 'vuex'
 // 数据源
 const loginForm = ref({
   username: 'super-admin',
-  password: 123456
+  password: '123456'
 })
 // 验证规则
 const loginRules = ref({
