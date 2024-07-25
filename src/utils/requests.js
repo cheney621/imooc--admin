@@ -2,6 +2,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import store from '@/store'
+import { isCheckTimeout } from '@/utils/auth'
 
 // 设置基础路径
 const service = axios.create({
@@ -9,17 +10,26 @@ const service = axios.create({
   timeout: 5000
 })
 // 请求拦截器
-service.interceptors.request.use((config) => {
-  // 添加 icode
-  config.headers.icode = 'F95F9B5DF6732F51'
-  // 统一注入token,以验证身份获取用户信息
-  if (store.getters.token) {
-    // 如果token存在，注入token
-    config.headers.Authorization = `Bearer ${store.getters.token}`
+service.interceptors.request.use(
+  (config) => {
+    // 添加 icode
+    config.headers.icode = 'F95F9B5DF6732F51'
+    // 在这个位置需要统一的去注入token
+    if (store.getters.token) {
+      // 如果token存在 注入token
+      config.headers.Authorization = `Bearer ${store.getters.token}`
+      if (isCheckTimeout()) {
+        // 登出操作
+        store.dispatch('user/logout')
+        return Promise.reject(new Error('token 失效'))
+      }
+    }
+    return config // 必须返回配置
+  },
+  (error) => {
+    return Promise.reject(error)
   }
-  // 必须返回 config
-  return config
-})
+)
 // 响应拦截器
 service.interceptors.response.use(
   // 接口文档中响应数据
@@ -47,6 +57,14 @@ service.interceptors.response.use(
   },
   // 请求失败
   (error) => {
+    // 处理token超时问题
+    if (
+      error.response &&
+      error.response.data &&
+      error.response.data.code === 401
+    ) {
+      store.dispatch('user/logout')
+    }
     ElMessage.error(error.message) //提示错误信息
     return Promise.reject(error)
   }

@@ -1,8 +1,9 @@
-import { getUserInfo, login } from '@/api/sys'
+import { login, getUserInfo } from '@/api/sys'
 import md5 from 'md5'
-import { setItem, getItem } from '@/utils/storage'
+import { setItem, getItem, removeAllItem } from '@/utils/storage'
 import { TOKEN } from '@/constant'
 import router from '@/router'
+import { setTimeStamp } from "@/utils/auth";
 
 export default {
   namespaced: true,
@@ -31,6 +32,8 @@ export default {
             this.commit('user/setToken', data.token)
             // 登录成功跳转
             router.push('/')
+            // 保存登陆时间
+            setTimeStamp()
             resolve()
           })
           .catch((err) => {
@@ -42,6 +45,15 @@ export default {
       const res = await getUserInfo()
       this.commit('user/setUserInfo', res)
       return res
+    },
+    //退出登录
+    //清除token用户信息，以及本地存储里的信息
+    //返回登录页面
+    logout() {
+      this.commit('user/setToken', '')
+      this.commit('user/setUserInfo', {})
+      removeAllItem()
+      router.push('/login')
     }
   }
 }

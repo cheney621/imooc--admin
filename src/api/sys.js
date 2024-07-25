@@ -16,7 +16,6 @@ export const login = (data) => {
  */
 export const getUserInfo = () => {
   return request({
-    url: '/sys/profile',
-    method: 'GET'
+    url: '/sys/profile'
   })
 }
