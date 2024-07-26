@@ -57,6 +57,7 @@ service.interceptors.response.use(
   },
   // 请求失败
   (error) => {
+    console.log('请求失败');
     // 处理token超时问题
     if (
       error.response &&
